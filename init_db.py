@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS movies (
     movie_id INTEGER PRIMARY KEY,
     title TEXT,
     tmdb_id INTEGER,
-    poster_path TEXT   -- ✅ NEW COLUMN
+    poster_path TEXT,
+    genres TEXT,
 )
 """)
 
@@ -41,7 +42,7 @@ with open("ml-latest-small/links.csv", newline="") as f:
             tmdb_map[movie_id] = int(tmdb_id)
 
 # =========================
-# LOAD MOVIES (WITH poster_path)
+# LOAD MOVIES (WITH genres)
 # =========================
 
 with open("ml-latest-small/movies.csv", newline="", encoding="utf-8") as f:
@@ -49,17 +50,19 @@ with open("ml-latest-small/movies.csv", newline="", encoding="utf-8") as f:
     for row in reader:
         movie_id = int(row["movieId"])
         title = row["title"]
+        genres = row["genres"]  # ✅ extract genres
 
         cur.execute(
             """
-            INSERT INTO movies (movie_id, title, tmdb_id, poster_path)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO movies (movie_id, title, tmdb_id, poster_path, genres)
+            VALUES (?, ?, ?, ?, ?)
             """,
             (
                 movie_id,
                 title,
                 tmdb_map.get(movie_id),
-                None  # ✅ initially empty, script will populate
+                None,        # poster_path initially empty
+                genres       # ✅ store genres
             )
         )
 
@@ -86,4 +89,4 @@ with open("ml-latest-small/ratings.csv", newline="") as f:
 conn.commit()
 conn.close()
 
-print("✅ Database created with tmdb_id + poster_path successfully!")
+print("✅ Database created with tmdb_id + poster_path + genres successfully!")
